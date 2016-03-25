@@ -1,4 +1,4 @@
-package com.example.fraps.crypto_lab1;
+package my_java;
 
 import java.sql.Array;
 import java.util.Arrays;
@@ -10,13 +10,12 @@ import java.util.Scanner;
 public class uncipher {
     public static void main(String[] args) {
         char[] alphabetRus = new char[32];
+        int max_sovpodenii = 0;
 
         for (int i = 0; i < alphabetRus.length; i++) {
             alphabetRus[i] = (char) ((int) 'а' + i);
             System.out.print(alphabetRus[i]);                      //заполнение массива - алфавит
         }
-
-        int[] int_letter_freq = new int[alphabetRus.length];
 
         char[] CP_mass;                                          //массив символов нашего ШТ
         String CP_string;                                           //строка вводимого ШТ
@@ -26,97 +25,67 @@ public class uncipher {
         CP_mass = new char[CP_string.length()];
 
         for (int i = 0; i < CP_mass.length; i++) {
-            if (CP_string.charAt(i) == ' ')
-                continue;                                   //перевод введенной строки в масив символов
-            CP_mass[i] = CP_string.charAt(i);
-            System.out.print(CP_mass[i]);
+            CP_mass[i] = CP_string.charAt(i);                              //перевод строки в массив
         }
 
-        for (int i = 0; i < CP_mass.length; i++)
-            for (int j = 0; j < alphabetRus.length; j++)
-                if (CP_mass[i] == alphabetRus[j])                   //подсчет кол-ва появления буквы
-                    int_letter_freq[j]++;
-
-        System.out.println();
-
-        for (int j = 0; j < alphabetRus.length; j++) {                        //буква - кол-во появлений в ШТ
-            System.out.print(alphabetRus[j] + " " + int_letter_freq[j] + " ");
-            if ((j + 1) % 4 == 0)
-                System.out.println();
+        for(int r = 6; r < 26; r++){
+            int D = 0;
+            for(int i = 0; i < CP_mass.length - r - 1; i++)
+                if(CP_mass[i] == CP_mass[i + r])
+                    D++;
+            System.out.println("r=" + r + " " + D);                               //находим длину ключа
+            max_sovpodenii = Math.max(D, max_sovpodenii);
         }
+        System.out.println( "MAX: " + max_sovpodenii);
 
-        String[][] bigramArr = new String[alphabetRus.length][alphabetRus.length];
-        int[][] IntBigramArr = new int[alphabetRus.length][alphabetRus.length];
-        String itemp, jtemp;
+        int r;
+        r = sc.nextInt();
+        char[] CT_Key_letter = new char[r];
+        int[] letter_freq = new int[alphabetRus.length];
 
-        for (int i = 0; i < alphabetRus.length; i++) {
-            for (int j = 0; j < alphabetRus.length; j++) {
-                itemp = "" + alphabetRus[i];
-                jtemp = "" + alphabetRus[j];
-                bigramArr[i][j] = itemp + jtemp;
+        for(int i = 0; i < r; i++){
+            int max_temp_frq_letter = 0;
+            for (int k = 0; k < alphabetRus.length; k++)
+                    letter_freq[k] = 0;                                               //чистим массив для следующего блока текста
+
+            for(int j = i; j < CP_mass.length - r - 1; j += r)
+                for (int k = 0; k < alphabetRus.length; k++)
+                    if (CP_mass[j] == alphabetRus[k])                                   //считаем кол-во букв блока
+                        letter_freq[k]++;
+
+            for(int j = 0; j < letter_freq.length; j++) {
+                int temp_max = max_temp_frq_letter;
+                max_temp_frq_letter = Math.max(max_temp_frq_letter, letter_freq[j]);               //определяем букву что чаще всего повтор и ставим ее на соотв место в нашем шифрованом ключе
+                if(max_temp_frq_letter != temp_max)
+                    CT_Key_letter[i] = alphabetRus[j];
             }
         }
 
-        int first = -1;
-        int second = -1;
+        for(int i = 0; i < r; i++)
+            System.out.print(CT_Key_letter[i]);
 
-        for (int i = 0; i < CP_mass.length; i++)
-            for (int j = 0; j < alphabetRus.length; j++)
-                if (CP_mass[i] == alphabetRus[j]) {
-                    if (first == -1)
-                        first = j;
-                    else {
-                        second = j;
-                        IntBigramArr[first][second]++;
-                        first = second;
-                    }
-                }
+        int[] index_CT = new int[r];
+        for(int i = 0; i < index_CT.length; i++)
+            for(int j = 0; j < alphabetRus.length; j++)
+                if(CT_Key_letter[i] == alphabetRus[j])                                  ////////////////////////////
+                    index_CT[i] = j;
 
-        for (int i = 0; i < alphabetRus.length; i++) {
-            for (int j = 0; j < alphabetRus.length; j++) {
-                System.out.print(bigramArr[i][j] + " " + IntBigramArr[i][j] + " ");
+        char[] OT_Key_letter = new char[r];
+        int[] index_OT = new int[r];
+
+            for (int i = 0; i < r; i++) {
+                index_OT[i] = (index_CT[i] - 14) - (((index_CT[i] - 14) / 32) * 32);
+                if (index_OT[i] < 0)
+                    index_OT[i] = 32 + index_OT[i];
             }
-            System.out.println();
-        }
 
-        int max = 0;
-        for (int i = 0; i < alphabetRus.length; i++)
-            for (int j = 0; j < alphabetRus.length; j++)
-                max = Math.max(max, IntBigramArr[i][j]);
+            for (int i = 0; i < index_OT.length; i++)
+                for (int j = 0; j < alphabetRus.length; j++)
+                    if (index_OT[i] == j)
+                        OT_Key_letter[i] = alphabetRus[j];
 
-        int[] length_between_bigrams = new int[max - 1];
-
-        boolean tocount = false;
-        int k = 0;
-        int temp = 0;
-
-        for (int i = 0; i < CP_mass.length; i++) {
-            for (int j = 0; j < alphabetRus.length; j++)
-                if (CP_mass[i] == alphabetRus[j]) {
-                    if (first == -1)
-                        first = j;
-                    else {
-                        second = j;
-                        if (max == IntBigramArr[first][second]) {
-                            if (tocount) {
-                                length_between_bigrams[k] = i - temp - 2;
-                                temp = i;
-                                k++;
-                            } else
-                                tocount = true;
-                        }
-                        first = second;
-                    }
-                }
-        }
-
-        length_between_bigrams[0] -= 2;
         System.out.println();
-
-        for (int i = 0; i < length_between_bigrams.length; i++)
-            System.out.print(length_between_bigrams[i] + " ");
-
-
-
+            for (int i = 0; i < OT_Key_letter.length; i++)
+                System.out.print(OT_Key_letter[i]);
     }
 }
