@@ -1,4 +1,4 @@
-package com.example.fraps.crypto_lab1;
+package my_java;
 
 import java.io.*;
 
@@ -65,15 +65,15 @@ public class Main {
                         } else {
                             second = i;
                             IntBigramArr[first][second]++;
-                            first = second;
+                            first = second;                                //пересекающиеся
+                            //first = -1;                                          //непересикающиеся
                             break;
                         }
                     }
-/*                    else {
-                        if (first != -1) {      // со знаками припинания пробелами и тд...
+                    else
+                        if (first != -1 && i == 32)       // со знаками припинания пробелами и тд...
                             first = -1;
-                        }
-                    }*/
+
             long timer1 = -System.currentTimeMillis();
             System.out.println("C.m() " + (double) (timer - timer1)/1000);
         } catch (IOException e) {
